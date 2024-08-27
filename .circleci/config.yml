@@ -1,0 +1,54 @@
+# This config was automatically generated from your source code
+# Stacks detected: cicd:github-actions:.github/workflows,deps:node:.,deps:php:.,test:jest:
+version: 2.1
+orbs:
+  node: circleci/node@5
+  php: circleci/php@1
+jobs:
+  test-node:
+    # Install node dependencies and run tests
+    executor: node/default
+    environment:
+      JEST_JUNIT_OUTPUT_DIR: ./test-results/
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          command: npm install jest-junit
+      - run:
+          name: Run tests with Jest
+          command: ./node_modules/.bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
+      - store_test_results:
+          path: ./test-results/
+  test-php:
+    # Install php packages and run tests
+    docker:
+      - image: cimg/php:8.2.7-node
+    steps:
+      - checkout
+      - php/install-packages
+      - run:
+          name: run tests
+          command: ./vendor/bin/phpunit
+  deploy:
+    # This is an example deploy job, not actually used by the workflow
+    docker:
+      - image: cimg/base:stable
+    steps:
+      # Replace this with steps to deploy to users
+      - run:
+          name: deploy
+          command: '#e.g. ./deploy.sh'
+      - run:
+          name: found github actions config
+          command: ':'
+workflows:
+  build-and-test:
+    jobs:
+      - test-node
+      - test-php
+    # - deploy:
+    #     requires:
+    #       - test-node
+    #       - test-php
